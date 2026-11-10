@@ -1,149 +1,126 @@
-# app.py
 import streamlit as st
-from data_fetcher import GLOBAL_PAIRS, get_market_data
-from analyzer import MarketAnalyzer
-import time
+import pandas as pd
+from data_fetcher import fetch_market_data
+from analyzer import analyze_market
 
+# إعدادات الصفحة وإخفاء القوائم العلوية وأزرار الـ Streamlit تماماً لتصبح منصة مستقلة
 st.set_page_config(
-    page_title="Bot King of Pocket - التحليل الشامل",
-    page_icon="🤖",
-    layout="centered",
+    page_title="Bot King of Pocket",
+    page_icon="👑",
+    layout="wide",
     initial_sidebar_state="collapsed"
 )
 
-# تنسيقات CSS لتصميم النافذة العائمة والأزرار
+# تخصيص CSS متقدم لإخفاء الهيدر العلوي وأدوات Streamlit وجعل الواجهة داكنة واحترافية
 st.markdown("""
     <style>
-    .stButton>button {
-        width: 100%;
-        border-radius: 10px;
-        font-weight: bold;
-        height: 3em;
-    }
-    .main {
-        direction: rtl;
-    }
-    /* تصميم النافذة العائمة في أسفل الشاشة */
-    .floating-banner {
-        position: fixed;
-        bottom: 0;
-        right: 0;
-        left: 0;
-        background-color: #1e293b;
-        color: white;
-        padding: 12px 20px;
-        text-align: center;
-        z-index: 99999;
-        box-shadow: 0px -4px 10px rgba(0,0,0,0.3);
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        gap: 15px;
-        font-family: sans-serif;
-    }
-    .floating-btn {
-        background-color: #2563eb;
-        color: white !important;
-        padding: 8px 18px;
-        border-radius: 8px;
-        text-decoration: none;
-        font-weight: bold;
-        font-size: 14px;
-        transition: 0.3s;
-    }
-    .floating-btn:hover {
-        background-color: #1d4ed8;
-    }
+    #MainMenu {visibility: hidden;}
+    header {visibility: hidden;}
+    footer {visibility: hidden;}
+    .stApp { background-color: #0b0f19; color: #ffffff; }
+    .stMetric { background-color: #111827; padding: 18px; border-radius: 12px; border: 1px solid #1f2937; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
+    div.stButton > button { background-color: #ef4444; color: white; border-radius: 8px; width: 100%; font-weight: bold; height: 45px; border: none; }
+    div.stButton > button:hover { background-color: #dc2626; }
+    .login-card { background-color: #111827; padding: 30px; border-radius: 15px; border: 1px solid #1f2937; }
     </style>
 """, unsafe_allow_html=True)
 
-# عرض النافذة العائمة الثابتة في أسفل الشاشة لجروب التليجرام
+# إدارة حالة تسجيل الدخول في الجلسة
+if "authenticated" not in st.session_state:
+    st.session_state.authenticated = False
+
+CORRECT_PASSWORD = "King_Of_Pocket_BOT"
+
+# إذا لم يتم تسجيل الدخول
+if not st.session_state.authenticated:
+    col1, col2, col3 = st.columns([1, 1.2, 1])
+    with col2:
+        st.markdown("<br><br>", unsafe_allow_html=True)
+        st.markdown("""
+            <div class="login-card">
+                <h2 style='text-align: center; color: #ffffff; margin-bottom: 10px;'>🔐 بوابة الدخول الرقمية</h2>
+                <p style='text-align: center; color: #9ca3af; font-size: 14px;'>منصة Bot King of Pocket للتحليل الفني الذكي</p>
+            </div>
+        """, unsafe_allow_html=True)
+        
+        password_input = st.text_input("أدخل كلمة المرور السرية:", type="password", placeholder="اكتب كلمة السر هنا...")
+        
+        if st.button("تسجيل الدخول للمنصة"):
+            if password_input == CORRECT_PASSWORD:
+                st.session_state.authenticated = True
+                st.rerun()
+            else:
+                st.error("كلمة المرور غير صحيحة. يرجى التأكد منها.")
+                st.markdown("<div style='text-align: center;'><a href='https://t.me/+FoaC38eLvaBhN2I0' target='_blank' style='color: #60a5fa;'>الانضمام لمجتمع التليجرام للحصول على الكود</a></div>", unsafe_allow_html=True)
+
+else:
+    # --- لوحة التداول والتحليل الاحترافية بعد الدخول ---
+    st.markdown("<h1 style='color: #f3f4f6;'>⚡ Bot King of Pocket | محطة التداول والتحليل الذكي</h1>", unsafe_allow_html=True)
+    st.markdown("<p style='color: #9ca3af;'>نظام التحليل الفني اللحظي المتقدم لإدارة الصفقات بكفاءة عالية.</p>", unsafe_allow_html=True)
+    st.markdown("---")
+
+    symbol = st.selectbox("اختر أصل التداول المتاح:", ["EUR/USD", "GBP/USD", "USD/JPY", "AUD/USD", "GOLD (XAU/USD)"])
+    
+    df = fetch_market_data(symbol)
+    analysis = analyze_market(df)
+
+    col1, col2, col3, col4 = st.columns(4)
+    with col1:
+        st.metric(label="الأصل النشط", value=symbol, delta="مباشر OTC")
+    with col2:
+        st.metric(label="السعر الحالي", value=str(analysis["price"]), delta="تحديث فوري")
+    with col3:
+        st.metric(label="قوة الإشارة", value=analysis["strength"], delta="AI Model")
+    with col4:
+        st.metric(label="مؤشر القوة (RSI)", value=str(analysis["rsi"]), delta="14 Min")
+
+    st.markdown("---")
+
+    st.subheader("🎯 التوصية الحالية للذكاء الاصطناعي:")
+    if "شراء" in analysis["signal"]:
+        st.success(f"القرار: **{analysis['signal']}** - الفرصة مؤكدة ومناسبة لدخول صفقة صعود.")
+    elif "بيع" in analysis["signal"]:
+        st.error(f"القرار: **{analysis['signal']}** - الفرصة مؤكدة ومناسبة لدخول صفقة هبوط.")
+    else:
+        st.warning(f"القرار: **{analysis['signal']}** - السوق في حالة تذبذب حالياً، يفضل الانتظار.")
+
+    st.subheader(f"📊 الشارت الفني المباشر لـ {symbol}")
+    chart_df = df.set_index("Time")[["Price"]]
+    st.line_chart(chart_df, color="#38bdf8")
+
+# --- شريط التيليجرام العائم في الأسفل ---
 st.markdown("""
-    <div class="floating-banner">
-        <span>🚀 انضم الآن إلى مجتمع التداول الرسمي على التليجرام!</span>
-        <a href="https://t.me/+FoaC38eLvaBhN2I0" target="_blank" class="floating-btn">انضم الان</a>
+    <style>
+    .telegram-bar {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        background-color: #111827;
+        color: white;
+        text-align: center;
+        padding: 12px;
+        font-size: 15px;
+        font-weight: bold;
+        z-index: 99999;
+        border-top: 1px solid #374151;
+        box-shadow: 0 -4px 6px -1px rgba(0, 0, 0, 0.1);
+    }
+    .telegram-bar a {
+        background-color: #2563eb;
+        color: white;
+        padding: 6px 16px;
+        border-radius: 6px;
+        text-decoration: none;
+        margin-right: 12px;
+        font-size: 14px;
+    }
+    .telegram-bar a:hover {
+        background-color: #1d4ed8;
+    }
+    </style>
+    <div class="telegram-bar">
+        📢 انضم الآن إلى مجتمع التليجرام الرسمي للحصول على التحديثات والإشارات الحصرية!
+        <a href="https://t.me/+FoaC38eLvaBhN2I0" target="_blank">انضم الآن</a>
     </div>
 """, unsafe_allow_html=True)
-
-# نظام حماية الموقع بكلمة السر
-if "authenticated" not in st.session_state:
-    st.session_state["authenticated"] = False
-
-if not st.session_state["authenticated"]:
-    st.title("🔒 بوابة الدخول - Bot King of Pocket")
-    st.markdown("للحصول على بوت الذكاء الاصطناعي فائق الدقة يرجى ادخال كلمة السر:")
-    
-    password_input = st.text_input("كلمة السر:", type="password")
-    
-    if st.button("دخول", type="primary"):
-        if password_input == "King_Of_Pocket_BOT":
-            st.session_state["authenticated"] = True
-            st.rerun()
-        else:
-            st.error("❌ كلمة السر غير صحيحة!")
-            st.markdown(
-                '📞 للحصول على كلمة السر أو الاشتراك، يرجى التواصل مع الدعم مباشرة عبر الرابط التالي: '
-                '[اضغط هنا للتواصل على التيليجرام](https://t.me/king_of_pocket)',
-                unsafe_allow_html=True
-            )
-    
-    st.stop() # إيقاف عرض باقي الصفحة حتى يتم تسجيل الدخول بنجاح
-
-# --- محتوى الموقع بعد تسجيل الدخول بنجاح ---
-st.title("🤖 نظام بوت التحليل الفني وقواعد السوق المتقدمة")
-st.markdown("البوت الشامل لتحليل الدعوم، المقاومات، الترندات، ومؤشرات الزخم العالمية.")
-
-col_1, col_2 = st.columns(2)
-
-with col_1:
-    selected_key = st.selectbox(
-        "اختر الزوج / الأصل:",
-        options=list(GLOBAL_PAIRS.keys()),
-        format_func=lambda x: GLOBAL_PAIRS[x]["name"]
-    )
-
-with col_2:
-    timeframe = st.selectbox(
-        "حدد الإطار الزمني للصفقة:",
-        options=["1m", "5m", "15m", "30m", "1h"],
-        index=0
-    )
-
-st.markdown("---")
-
-if st.button("🚀 تحليل السوق وقواعد التداول الآن", type="primary"):
-    
-    with st.spinner("⏳ جاري فحص الدعوم، المقاومات، والترندات الحية للسوق..."):
-        time.sleep(1.2)
-        prices, pair_name = get_market_data(selected_key, interval=timeframe)
-        
-    if not prices:
-        st.error(f"❌ حدث خطأ في جلب بيانات السوق لـ {pair_name}")
-    else:
-        analyzer = MarketAnalyzer(prices)
-        
-        rsi_result = analyzer.analyze_rsi()
-        sr_result = analyzer.analyze_support_resistance()
-        trend_result = analyzer.analyze_trend_and_ma()
-        bb_result = analyzer.analyze_bollinger_bands()
-        
-        st.markdown("---")
-        st.subheader(f"📊 تقرير التحليل الفني الشامل لـ [{pair_name}] ({timeframe})")
-        
-        st.info(f"📍 **منطقة الدعم / المقاومة:** {sr_result}")
-        st.success(f"📈 **اتجاه الترند (Trend):** {trend_result}")
-        st.warning(f"📉 **مؤشر القوة النسبية (RSI):** {rsi_result}")
-        st.text(f"🌐 **نطاق البولنجر باند (Bollinger):** {bb_result}")
-            
-        st.markdown("---")
-        
-        results = [sr_result, trend_result, rsi_result, bb_result]
-        bullish_score = sum(1 for r in results if "🟢" in r)
-        bearish_score = sum(1 for r in results if "🔴" in r)
-        
-        if bullish_score > bearish_score and bullish_score >= 2:
-            st.success(f"🟢 **الأمر النهائي: شراء / صفقة صاعدة (CALL) 🚀**\n*(توافق عدد {bullish_score} إشارات إيجابية صاعدة)*")
-        elif bearish_score > bullish_score and bearish_score >= 2:
-            st.error(f"🔴 **الأمر النهائي: بيع / صفقة هابطة (PUT) 🔻**\n*(توافق عدد {bearish_score} إشارات سلبية هابطة)*")
-        else:
-            st.warning("⏳ **الأمر النهائي: السوق متذبذب وغير واضح - يُنصح بالانتظار وعدم الدخول ⚪**")
