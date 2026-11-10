@@ -3,7 +3,7 @@ import pandas as pd
 from data_fetcher import fetch_market_data
 from analyzer import analyze_market
 
-# إعدادات الصفحة وإخفاء القوائم العلوية وأزرار الـ Streamlit تماماً لتصبح منصة مستقلة
+# إعدادات الصفحة وإخفاء القوائم العلوية وأزرار الـ Streamlit بالكامل
 st.set_page_config(
     page_title="Bot King of Pocket",
     page_icon="👑",
@@ -11,12 +11,15 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# تخصيص CSS متقدم لإخفاء الهيدر العلوي وأدوات Streamlit وجعل الواجهة داكنة واحترافية
+# تخصيص CSS متقدم لتأمين مظهر التداول وإخفاء أي شعارات أو أزرار تحكم خاصة بالمنصة
 st.markdown("""
     <style>
     #MainMenu {visibility: hidden;}
     header {visibility: hidden;}
     footer {visibility: hidden;}
+    [data-testid="stDecoration"] {display: none;}
+    .viewerBadge_container__1QSob {display: none !important;}
+    
     .stApp { background-color: #0b0f19; color: #ffffff; }
     .stMetric { background-color: #111827; padding: 18px; border-radius: 12px; border: 1px solid #1f2937; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
     div.stButton > button { background-color: #ef4444; color: white; border-radius: 8px; width: 100%; font-weight: bold; height: 45px; border: none; }
