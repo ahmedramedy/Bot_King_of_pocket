@@ -1,6 +1,5 @@
 import streamlit as st
 import pandas as pd
-import time
 from data_fetcher import fetch_market_data
 from analyzer import analyze_market
 
@@ -81,14 +80,8 @@ else:
     with col_b2:
         run_analysis = st.button("🔍 تحليل الآن")
 
-    # حفظ حالة بدء التحليل في الجلسة لضمان استمرار التحديث اللحظي عند الضغط
-    if "run_active" not in st.session_state:
-        st.session_state.run_active = False
-
+    # لن يظهر أي شيء نهائياً إلا إذا تم الضغط على زر تحليل الآن
     if run_analysis:
-        st.session_state.run_active = True
-
-    if st.session_state.run_active:
         with st.spinner("جاري جلب أسعار السوق العالمي الحية وتحليل المؤشرات الفنية..."):
             df = fetch_market_data(symbol)
             analysis = analyze_market(df)
@@ -119,10 +112,6 @@ else:
         st.subheader(f"📊 الشارت الفني المباشر لـ {symbol}")
         chart_df = df.set_index("Time")[["Price"]]
         st.line_chart(chart_df, color="#38bdf8")
-
-        # التحديث اللحظي التلقائي للسعر كل 5 ثوانٍ
-        time.sleep(5)
-        st.rerun()
 
 st.markdown("""
     <style>
