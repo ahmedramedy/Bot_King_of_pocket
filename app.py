@@ -3,7 +3,6 @@ import pandas as pd
 from data_fetcher import fetch_market_data
 from analyzer import analyze_market
 
-# إعدادات الصفحة وإخفاء القوائم العلوية وأزرار الـ Streamlit بالكامل
 st.set_page_config(
     page_title="Bot King of Pocket",
     page_icon="👑",
@@ -11,7 +10,6 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# تخصيص CSS متقدم لإخفاء أي شريط تحكم أو زر إدارة نهائياً
 st.markdown("""
     <style>
     #MainMenu {visibility: hidden;}
@@ -19,23 +17,20 @@ st.markdown("""
     footer {visibility: hidden;}
     [data-testid="stDecoration"] {display: none;}
     .viewerBadge_container__1QSob {display: none !important;}
-    iframe[title="streamlit_app.components.v1.html"] {display: none;}
     
     .stApp { background-color: #0b0f19; color: #ffffff; }
-    .stMetric { background-color: #111827; padding: 18px; border-radius: 12px; border: 1px solid #1f2937; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
+    .stMetric { background-color: #111827; padding: 18px; border-radius: 12px; border: 1px solid #1f2937; }
+    .login-card { background-color: #111827; padding: 30px; border-radius: 15px; border: 1px solid #1f2937; }
     div.stButton > button { background-color: #ef4444; color: white; border-radius: 8px; width: 100%; font-weight: bold; height: 45px; border: none; }
     div.stButton > button:hover { background-color: #dc2626; }
-    .login-card { background-color: #111827; padding: 30px; border-radius: 15px; border: 1px solid #1f2937; }
     </style>
 """, unsafe_allow_html=True)
 
-# إدارة حالة تسجيل الدخول في الجلسة
 if "authenticated" not in st.session_state:
     st.session_state.authenticated = False
 
 CORRECT_PASSWORD = "King_Of_Pocket_BOT"
 
-# إذا لم يتم تسجيل الدخول
 if not st.session_state.authenticated:
     col1, col2, col3 = st.columns([1, 1.2, 1])
     with col2:
@@ -58,50 +53,44 @@ if not st.session_state.authenticated:
                 st.markdown("<div style='text-align: center;'><a href='https://t.me/+FoaC38eLvaBhN2I0' target='_blank' style='color: #60a5fa;'>الانضمام لمجتمع التليجرام للحصول على الكود</a></div>", unsafe_allow_html=True)
 
 else:
-    # --- لوحة التداول والتحليل الاحترافية بعد الدخول ---
     st.markdown("<h1 style='color: #f3f4f6;'>⚡ Bot King of Pocket | محطة التداول والتحليل الذكي</h1>", unsafe_allow_html=True)
-    st.markdown("<p style='color: #9ca3af;'>نظام التحليل الفني اللحظي المتقدم لإدارة الصفقات بكفاءة عالية.</p>", unsafe_allow_html=True)
+    st.markdown("<p style='color: #9ca3af;'>نظام التحليل الفني اللحظي المتقدم وإدارة الصفقات بدقة عالية.</p>", unsafe_allow_html=True)
     st.markdown("---")
 
-    symbol = st.selectbox("اختر أصل التداول المتاح:", ["EUR/USD", "GBP/USD", "USD/JPY", "AUD/USD", "GOLD (XAU/USD)"])
+    symbol = st.selectbox("اختر أصل التداول المباشر:", ["EUR/USD", "GBP/USD", "USD/JPY", "AUD/USD", "GOLD (XAU/USD)"])
     
-    # زر بدء التحليل الذي تفضله
-    st.markdown("<br>", unsafe_allow_html=True)
-    col_btn1, col_btn2, col_btn3 = st.columns([1, 2, 1])
-    with col_btn2:
-        run_analysis = st.button("🚀 ابدأ تحليل السوق الآن")
+    # جلب وتحليل البيانات وعرض النتيجة والسبب فوراً بدون أزرار إضافية
+    df = fetch_market_data(symbol)
+    analysis = analyze_market(df)
 
-    if run_analysis:
-        with st.spinner("جاري الاتصال بسیرفرات السوق وتحليل الشموع اليابانية ومؤشرات الـ RSI..."):
-            df = fetch_market_data(symbol)
-            analysis = analyze_market(df)
+    st.markdown("---")
+    col1, col2, col3, col4 = st.columns(4)
+    with col1:
+        st.metric(label="الأصل النشط", value=symbol, delta="سعر حقيقي مباشر")
+    with col2:
+        st.metric(label="السعر الحالي", value=str(analysis["price"]), delta="Market Live")
+    with col3:
+        st.metric(label="قوة الإشارة", value=analysis["strength"], delta="AI Model")
+    with col4:
+        st.metric(label="مؤشر القوة (RSI)", value=str(analysis["rsi"]), delta="14 Min")
 
-        st.markdown("---")
-        col1, col2, col3, col4 = st.columns(4)
-        with col1:
-            st.metric(label="الأصل النشط", value=symbol, delta="مباشر OTC")
-        with col2:
-            st.metric(label="السعر الحالي", value=str(analysis["price"]), delta="تحديث فوري")
-        with col3:
-            st.metric(label="قوة الإشارة", value=analysis["strength"], delta="AI Model")
-        with col4:
-            st.metric(label="مؤشر القوة (RSI)", value=str(analysis["rsi"]), delta="14 Min")
+    st.markdown("---")
 
-        st.markdown("---")
+    st.subheader("🎯 القرار الفني والإشارة المباشرة:")
+    if "شراء" in analysis["signal"]:
+        st.success(f"القرار: **{analysis['signal']}**")
+    elif "بيع" in analysis["signal"]:
+        st.error(f"القرار: **{analysis['signal']}**")
+    else:
+        st.warning(f"القرار: **{analysis['signal']}**")
 
-        st.subheader("🎯 التوصية الحالية للذكاء الاصطناعي:")
-        if "شراء" in analysis["signal"]:
-            st.success(f"القرار: **{analysis['signal']}** - الفرصة مؤكدة ومناسبة لدخول صفقة صعود.")
-        elif "بيع" in analysis["signal"]:
-            st.error(f"القرار: **{analysis['signal']}** - الفرصة مؤكدة ومناسبة لدخول صفقة هبوط.")
-        else:
-            st.warning(f"القرار: **{analysis['signal']}** - السوق في حالة تذبذب حالياً، يفضل الانتظار.")
+    # عرض سبب دخول الصفقة بوضوح واحترافية للمتداول
+    st.info(f"💡 **سبب دخول الصفقة وتحليل السعر:**\n\n{analysis['reason']}")
 
-        st.subheader(f"📊 الشارت الفني المباشر لـ {symbol}")
-        chart_df = df.set_index("Time")[["Price"]]
-        st.line_chart(chart_df, color="#38bdf8")
+    st.subheader(f"📊 الشارت الفني المباشر لـ {symbol}")
+    chart_df = df.set_index("Time")[["Price"]]
+    st.line_chart(chart_df, color="#38bdf8")
 
-# --- شريط التيليجرام العائم في الأسفل ---
 st.markdown("""
     <style>
     .telegram-bar {
