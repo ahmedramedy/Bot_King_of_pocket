@@ -12,13 +12,20 @@ st.set_page_config(
 
 st.markdown("""
     <style>
-    #MainMenu {visibility: hidden;}
-    header {visibility: hidden;}
-    footer {visibility: hidden;}
-    [data-testid="stDecoration"] {display: none;}
+    #MainMenu {visibility: hidden !important; display: none !important;}
+    header {visibility: hidden !important; display: none !important;}
+    footer {visibility: hidden !important; display: none !important;}
+    [data-testid="stDecoration"] {display: none !important;}
     .viewerBadge_container__1QSob {display: none !important;}
     div[data-testid="stStatusWidget"] {visibility: hidden !important; display: none !important;}
     .stDeployButton {display: none !important;}
+    button[kind="header"] {display: none !important;}
+    
+    /* إخفاء أي أيقونات عائمة في زوايا الشاشة نهائياً */
+    iframe[src*="streamlit.io"], section[data-testid="stSidebarNav"] + div, div.myButton, [class*="viewerBadge"], [class*="stStatusWidget"] {
+        display: none !important;
+        visibility: hidden !important;
+    }
     
     .stApp { background-color: #0b0f19; color: #ffffff; }
     .stMetric { background-color: #111827; padding: 18px; border-radius: 12px; border: 1px solid #1f2937; }
@@ -28,10 +35,27 @@ st.markdown("""
     </style>
     
     <script>
-    setInterval(function() {
-        const badges = window.parent.document.querySelectorAll('[data-testid="stStatusWidget"], .viewerBadge_container__1QSob, .stDeployButton');
-        badges.forEach(el => el.remove());
-    }, 500);
+    // حذف الأيقونات العائمة وأزرار التحكم من الشاشة فوراً وبشكل مستمر
+    const removeAllBadges = () => {
+        const elements = document.querySelectorAll('iframe, [data-testid="stStatusWidget"], .viewerBadge_container__1QSob, .stDeployButton');
+        elements.forEach(el => {
+            if (el.getBoundingClientRect().bottom > window.innerHeight - 100 || el.getBoundingClientRect().right > window.innerWidth - 100) {
+                el.remove();
+            }
+        });
+        // البحث داخل الـ Shadow DOM أو الأصفار العائمة الخاصة بالمتصفح
+        const allDivs = document.querySelectorAll('div');
+        allDivs.forEach(div => {
+            const pos = window.getComputedStyle(div).position;
+            if ((pos === 'fixed' || pos === 'absolute') && div.getBoundingClientRect().bottom > window.innerHeight - 80) {
+                if (!div.classList.contains('telegram-bar')) {
+                    div.remove();
+                }
+            }
+        });
+    };
+    setInterval(removeAllBadges, 200);
+    window.addEventListener('load', removeAllBadges);
     </script>
 """, unsafe_allow_html=True)
 
@@ -80,7 +104,6 @@ else:
     with col_b2:
         run_analysis = st.button("🔍 تحليل الآن")
 
-    # لن يظهر أي شيء نهائياً إلا إذا تم الضغط على زر تحليل الآن
     if run_analysis:
         with st.spinner("جاري جلب أسعار السوق العالمي الحية وتحليل المؤشرات الفنية..."):
             df = fetch_market_data(symbol)
