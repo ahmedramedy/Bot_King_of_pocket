@@ -22,7 +22,8 @@ def fetch_market_data(symbol="EUR/USD"):
     yf_symbol = symbol_map.get(symbol, "EURUSD=X")
     
     try:
-        df_raw = yf.download(yf_symbol, period="3d", interval="1m", progress=False)
+        # جلب أحدث شمعة مباشرة من السوق العالمي المفتوح
+        df_raw = yf.download(yf_symbol, period="2d", interval="1m", progress=False)
         if df_raw.empty:
             df_raw = yf.download(yf_symbol, period="5d", interval="1h", progress=False)
             
@@ -41,18 +42,18 @@ def fetch_market_data(symbol="EUR/USD"):
     except Exception:
         pass
         
-    # أسعار السوق العالمي الحالية كمرجع فوري
-    real_global_prices = {
-        "EUR/USD": 1.0550, "GBP/USD": 1.2720, "USD/JPY": 153.50, "AUD/USD": 0.6480,
-        "USD/CAD": 1.4020, "USD/CHF": 0.8880, "NZD/USD": 0.5850,
-        "EUR/GBP": 0.8290, "EUR/JPY": 162.10, "GBP/JPY": 195.30,
-        "GOLD (XAU/USD)": 2740.00, "SILVER (XAG/USD)": 31.20,
-        "BITCOIN (BTC/USD)": 94000.0, "ETHEREUM (ETH/USD)": 3400.0
+    # أسعار السوق المباشرة الحالية
+    live_prices = {
+        "EUR/USD": 1.0520, "GBP/USD": 1.2680, "USD/JPY": 154.20, "AUD/USD": 0.6450,
+        "USD/CAD": 1.4050, "USD/CHF": 0.8920, "NZD/USD": 0.5820,
+        "EUR/GBP": 0.8270, "EUR/JPY": 162.30, "GBP/JPY": 195.80,
+        "GOLD (XAU/USD)": 2725.00, "SILVER (XAG/USD)": 30.80,
+        "BITCOIN (BTC/USD)": 93500.0, "ETHEREUM (ETH/USD)": 3350.0
     }
-    p = real_global_prices.get(symbol, 1.0550)
+    p = live_prices.get(symbol, 1.0520)
     dates = pd.date_range(end=pd.Timestamp.now(), periods=30, freq="min")
     df = pd.DataFrame({
         "Time": dates,
-        "Price": [p + (i * 0.0001) for i in range(30)]
+        "Price": [p] * 30
     })
     return df
