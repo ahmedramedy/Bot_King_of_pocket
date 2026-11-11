@@ -10,7 +10,7 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# أكواد متقدمة لإخفاء كافة قوائم وأزرار وعلامات Streamlit والتحكم بشكل كامل
+# أكواد CSS و JavaScript متقدمة لإخفاء أي علامات تحكم أو أدوات تخص Streamlit نهائياً
 st.markdown("""
     <style>
     #MainMenu {visibility: hidden;}
@@ -27,6 +27,14 @@ st.markdown("""
     div.stButton > button { background-color: #ef4444; color: white; border-radius: 8px; width: 100%; font-weight: bold; height: 45px; border: none; }
     div.stButton > button:hover { background-color: #dc2626; }
     </style>
+    
+    <script>
+    // كود جافاسكريبت لحذف علامة وأزرار التحكم من الصفحة تلقائياً بمجرد التحميل
+    setInterval(function() {
+        const badges = window.parent.document.querySelectorAll('[data-testid="stStatusWidget"], .viewerBadge_container__1QSob, .stDeployButton');
+        badges.forEach(el => el.remove());
+    }, 500);
+    </script>
 """, unsafe_allow_html=True)
 
 if "authenticated" not in st.session_state:
@@ -60,7 +68,13 @@ else:
     st.markdown("<p style='color: #9ca3af;'>نظام التحليل الفني اللحظي المتقدم وإدارة الصفقات بدقة عالية.</p>", unsafe_allow_html=True)
     st.markdown("---")
 
-    symbol = st.selectbox("اختر أصل التداول المباشر:", ["EUR/USD", "GBP/USD", "USD/JPY", "AUD/USD", "GOLD (XAU/USD)"])
+    # إضافة كافة أزواج العملات والمعادن المطلوبة
+    all_symbols = [
+        "EUR/USD", "GBP/USD", "USD/JPY", "AUD/USD", 
+        "USD/CAD", "USD/CHF", "NZD/USD", 
+        "GOLD (XAU/USD)", "SILVER (XAG/USD)"
+    ]
+    symbol = st.selectbox("اختر أصل التداول المباشر:", all_symbols)
     
     st.markdown("<br>", unsafe_allow_html=True)
     col_b1, col_b2, col_b3 = st.columns([1, 2, 1])
@@ -68,7 +82,7 @@ else:
         run_analysis = st.button("🔍 تحليل الآن")
 
     if run_analysis:
-        with st.spinner("جاري جلب أسعار السوق الحية وتحليل المؤشرات الفنية..."):
+        with st.spinner("جاري جلب أسعار السوق الحية وتحديث المؤشرات الفنية..."):
             df = fetch_market_data(symbol)
             analysis = analyze_market(df)
 
