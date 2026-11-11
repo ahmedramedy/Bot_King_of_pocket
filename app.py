@@ -70,56 +70,57 @@ else:
     all_symbols = [
         "EUR/USD", "GBP/USD", "USD/JPY", "AUD/USD", 
         "USD/CAD", "USD/CHF", "NZD/USD", 
-        "EUR/GBP", "EUR/JPY", "GBP/JPY", "AUD/JPY", "EUR/AUD", "GBP/AUD",
+        "EUR/GBP", "EUR/JPY", "GBP/JPY", 
         "GOLD (XAU/USD)", "SILVER (XAG/USD)",
         "BITCOIN (BTC/USD)", "ETHEREUM (ETH/USD)"
     ]
     symbol = st.selectbox("اختر أصل التداول المباشر:", all_symbols)
     
-    # حاوية لتحديث البيانات لحظياً كل ثوانٍ معدودة تلقائياً
-    placeholder = st.empty()
-
-    # زر للتحكم في التحديث أو تفعيله تلقائياً
+    st.markdown("<br>", unsafe_allow_html=True)
     col_b1, col_b2, col_b3 = st.columns([1, 2, 1])
     with col_b2:
-        auto_refresh = st.checkbox("🔄 تفعيل التحديث اللحظي التلقائي للسعر", value=True)
+        run_analysis = st.button("🔍 تحليل الآن")
 
-    while True:
-        with placeholder.container():
+    # حفظ حالة بدء التحليل في الجلسة لضمان استمرار التحديث اللحظي عند الضغط
+    if "run_active" not in st.session_state:
+        st.session_state.run_active = False
+
+    if run_analysis:
+        st.session_state.run_active = True
+
+    if st.session_state.run_active:
+        with st.spinner("جاري جلب أسعار السوق العالمي الحية وتحليل المؤشرات الفنية..."):
             df = fetch_market_data(symbol)
             analysis = analyze_market(df)
 
-            st.markdown("---")
-            col1, col2, col3, col4 = st.columns(4)
-            with col1:
-                st.metric(label="الأصل النشط", value=symbol, delta="سعر حقيقي مباشر")
-            with col2:
-                st.metric(label="السعر الحالي", value=str(analysis["price"]), delta="Live Market")
-            with col3:
-                st.metric(label="قوة الإشارة", value=analysis["strength"], delta="AI Model")
-            with col4:
-                st.metric(label="مؤشر القوة (RSI)", value=str(analysis["rsi"]), delta="14 Min")
+        st.markdown("---")
+        col1, col2, col3, col4 = st.columns(4)
+        with col1:
+            st.metric(label="الأصل النشط", value=symbol, delta="سعر حقيقي مباشر")
+        with col2:
+            st.metric(label="السعر الحالي", value=str(analysis["price"]), delta="Live Market")
+        with col3:
+            st.metric(label="قوة الإشارة", value=analysis["strength"], delta="AI Model")
+        with col4:
+            st.metric(label="مؤشر القوة (RSI)", value=str(analysis["rsi"]), delta="14 Min")
 
-            st.markdown("---")
+        st.markdown("---")
 
-            st.subheader("🎯 القرار الفني والإشارة المباشرة:")
-            if "شراء" in analysis["signal"]:
-                st.success(f"القرار: **{analysis['signal']}**")
-            elif "بيع" in analysis["signal"]:
-                st.error(f"القرار: **{analysis['signal']}**")
-            else:
-                st.warning(f"القرار: **{analysis['signal']}**")
+        st.subheader("🎯 القرار الفني والإشارة المباشرة:")
+        if "شراء" in analysis["signal"]:
+            st.success(f"القرار: **{analysis['signal']}**")
+        elif "بيع" in analysis["signal"]:
+            st.error(f"القرار: **{analysis['signal']}**")
+        else:
+            st.warning(f"القرار: **{analysis['signal']}**")
 
-            st.info(f"💡 **سبب دخول الصفقة وتحليل السعر:**\n\n{analysis['reason']}")
+        st.info(f"💡 **سبب دخول الصفقة وتحليل السعر:**\n\n{analysis['reason']}")
 
-            st.subheader(f"📊 الشارت الفني المباشر لـ {symbol}")
-            chart_df = df.set_index("Time")[["Price"]]
-            st.line_chart(chart_df, color="#38bdf8")
+        st.subheader(f"📊 الشارت الفني المباشر لـ {symbol}")
+        chart_df = df.set_index("Time")[["Price"]]
+        st.line_chart(chart_df, color="#38bdf8")
 
-        if not auto_refresh:
-            break
-        
-        # الانتظار 5 ثوانٍ ثم تحديث السعر تلقائياً أمامك
+        # التحديث اللحظي التلقائي للسعر كل 5 ثوانٍ
         time.sleep(5)
         st.rerun()
 
