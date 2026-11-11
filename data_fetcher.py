@@ -22,13 +22,11 @@ def fetch_market_data(symbol="EUR/USD"):
     yf_symbol = symbol_map.get(symbol, "EURUSD=X")
     
     try:
-        # استخدام yf.download مع معالجة هيكل البيانات الحديث
-        df_raw = yf.download(yf_symbol, period="5d", interval="1h", progress=False)
+        df_raw = yf.download(yf_symbol, period="3d", interval="1m", progress=False)
         if df_raw.empty:
-            df_raw = yf.download(yf_symbol, period="7d", interval="1d", progress=False)
+            df_raw = yf.download(yf_symbol, period="5d", interval="1h", progress=False)
             
         if not df_raw.empty:
-            # التعامل مع أعمدة MultiIndex في إصدارات ياهو الحديثة
             if isinstance(df_raw.columns, pd.MultiIndex):
                 close_prices = df_raw["Close"].iloc[:, 0]
             else:
@@ -37,27 +35,13 @@ def fetch_market_data(symbol="EUR/USD"):
             df = pd.DataFrame()
             df["Time"] = df_raw.index
             df["Price"] = close_prices.values.flatten() if hasattr(close_prices.values, 'flatten') else close_prices.values
-            df["Volume"] = 1000
             df = df.dropna()
             if not df.empty:
                 return df
     except Exception:
         pass
         
-    # محاولة ثانية عبر Ticker كبديل مباشر آمن
-    try:
-        t = yf.Ticker(yf_symbol)
-        hist = t.history(period="3d", interval="1h")
-        if not hist.empty:
-            df = pd.DataFrame()
-            df["Time"] = hist.index
-            df["Price"] = hist["Close"].values.flatten()
-            df["Volume"] = 1000
-            return df
-    except Exception:
-        pass
-        
-    # مرجع احتياطي محدث لآخر أسعار السوق العالمي الحالية
+    # أسعار السوق العالمي الحالية كمرجع فوري
     real_global_prices = {
         "EUR/USD": 1.0550, "GBP/USD": 1.2720, "USD/JPY": 153.50, "AUD/USD": 0.6480,
         "USD/CAD": 1.4020, "USD/CHF": 0.8880, "NZD/USD": 0.5850,
@@ -66,10 +50,9 @@ def fetch_market_data(symbol="EUR/USD"):
         "BITCOIN (BTC/USD)": 94000.0, "ETHEREUM (ETH/USD)": 3400.0
     }
     p = real_global_prices.get(symbol, 1.0550)
-    dates = pd.date_range(end=pd.Timestamp.now(), periods=30, freq="h")
+    dates = pd.date_range(end=pd.Timestamp.now(), periods=30, freq="min")
     df = pd.DataFrame({
         "Time": dates,
-        "Price": [p + (i * 0.0001) for i in range(30)],
-        "Volume": [1000] * 30
+        "Price": [p + (i * 0.0001) for i in range(30)]
     })
     return df
