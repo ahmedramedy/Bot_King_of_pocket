@@ -3,6 +3,7 @@ import pandas as pd
 
 def fetch_market_data(symbol="EUR/USD"):
     symbol_map = {
+        # الأزواج الرئيسية (Majors)
         "EUR/USD": "EURUSD=X",
         "GBP/USD": "GBPUSD=X",
         "USD/JPY": "USDJPY=X",
@@ -10,8 +11,23 @@ def fetch_market_data(symbol="EUR/USD"):
         "USD/CAD": "USDCAD=X",
         "USD/CHF": "USDCHF=X",
         "NZD/USD": "NZDUSD=X",
+        
+        # الأزواج التقاطعية (Crosses)
+        "EUR/GBP": "EURGBP=X",
+        "EUR/JPY": "EURJPY=X",
+        "GBP/JPY": "GBPJPY=X",
+        "AUD/JPY": "AUDJPY=X",
+        "EUR/AUD": "EURAUD=X",
+        "GBP/AUD": "GBPAUD=X",
+        
+        # المعادن والسلع (Commodities & Metals)
         "GOLD (XAU/USD)": "GC=F",
-        "SILVER (XAG/USD)": "SI=F"
+        "SILVER (XAG/USD)": "SI=F",
+        "CRUDE OIL": "CL=F",
+        
+        # العملات الرقمية (Crypto)
+        "BITCOIN (BTC/USD)": "BTC-USD",
+        "ETHEREUM (ETH/USD)": "ETH-USD"
     }
     
     yf_symbol = symbol_map.get(symbol, "EURUSD=X")
