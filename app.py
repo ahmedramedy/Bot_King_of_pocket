@@ -11,7 +11,7 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# تخصيص CSS متقدم لتأمين مظهر التداول وإخفاء أي شعارات أو أزرار تحكم خاصة بالمنصة
+# تخصيص CSS متقدم لإخفاء أي شريط تحكم أو زر إدارة نهائياً
 st.markdown("""
     <style>
     #MainMenu {visibility: hidden;}
@@ -19,6 +19,7 @@ st.markdown("""
     footer {visibility: hidden;}
     [data-testid="stDecoration"] {display: none;}
     .viewerBadge_container__1QSob {display: none !important;}
+    iframe[title="streamlit_app.components.v1.html"] {display: none;}
     
     .stApp { background-color: #0b0f19; color: #ffffff; }
     .stMetric { background-color: #111827; padding: 18px; border-radius: 12px; border: 1px solid #1f2937; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
@@ -64,32 +65,41 @@ else:
 
     symbol = st.selectbox("اختر أصل التداول المتاح:", ["EUR/USD", "GBP/USD", "USD/JPY", "AUD/USD", "GOLD (XAU/USD)"])
     
-    df = fetch_market_data(symbol)
-    analysis = analyze_market(df)
+    # زر بدء التحليل الذي تفضله
+    st.markdown("<br>", unsafe_allow_html=True)
+    col_btn1, col_btn2, col_btn3 = st.columns([1, 2, 1])
+    with col_btn2:
+        run_analysis = st.button("🚀 ابدأ تحليل السوق الآن")
 
-    col1, col2, col3, col4 = st.columns(4)
-    with col1:
-        st.metric(label="الأصل النشط", value=symbol, delta="مباشر OTC")
-    with col2:
-        st.metric(label="السعر الحالي", value=str(analysis["price"]), delta="تحديث فوري")
-    with col3:
-        st.metric(label="قوة الإشارة", value=analysis["strength"], delta="AI Model")
-    with col4:
-        st.metric(label="مؤشر القوة (RSI)", value=str(analysis["rsi"]), delta="14 Min")
+    if run_analysis:
+        with st.spinner("جاري الاتصال بسیرفرات السوق وتحليل الشموع اليابانية ومؤشرات الـ RSI..."):
+            df = fetch_market_data(symbol)
+            analysis = analyze_market(df)
 
-    st.markdown("---")
+        st.markdown("---")
+        col1, col2, col3, col4 = st.columns(4)
+        with col1:
+            st.metric(label="الأصل النشط", value=symbol, delta="مباشر OTC")
+        with col2:
+            st.metric(label="السعر الحالي", value=str(analysis["price"]), delta="تحديث فوري")
+        with col3:
+            st.metric(label="قوة الإشارة", value=analysis["strength"], delta="AI Model")
+        with col4:
+            st.metric(label="مؤشر القوة (RSI)", value=str(analysis["rsi"]), delta="14 Min")
 
-    st.subheader("🎯 التوصية الحالية للذكاء الاصطناعي:")
-    if "شراء" in analysis["signal"]:
-        st.success(f"القرار: **{analysis['signal']}** - الفرصة مؤكدة ومناسبة لدخول صفقة صعود.")
-    elif "بيع" in analysis["signal"]:
-        st.error(f"القرار: **{analysis['signal']}** - الفرصة مؤكدة ومناسبة لدخول صفقة هبوط.")
-    else:
-        st.warning(f"القرار: **{analysis['signal']}** - السوق في حالة تذبذب حالياً، يفضل الانتظار.")
+        st.markdown("---")
 
-    st.subheader(f"📊 الشارت الفني المباشر لـ {symbol}")
-    chart_df = df.set_index("Time")[["Price"]]
-    st.line_chart(chart_df, color="#38bdf8")
+        st.subheader("🎯 التوصية الحالية للذكاء الاصطناعي:")
+        if "شراء" in analysis["signal"]:
+            st.success(f"القرار: **{analysis['signal']}** - الفرصة مؤكدة ومناسبة لدخول صفقة صعود.")
+        elif "بيع" in analysis["signal"]:
+            st.error(f"القرار: **{analysis['signal']}** - الفرصة مؤكدة ومناسبة لدخول صفقة هبوط.")
+        else:
+            st.warning(f"القرار: **{analysis['signal']}** - السوق في حالة تذبذب حالياً، يفضل الانتظار.")
+
+        st.subheader(f"📊 الشارت الفني المباشر لـ {symbol}")
+        chart_df = df.set_index("Time")[["Price"]]
+        st.line_chart(chart_df, color="#38bdf8")
 
 # --- شريط التيليجرام العائم في الأسفل ---
 st.markdown("""
