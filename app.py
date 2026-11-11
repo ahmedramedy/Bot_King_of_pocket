@@ -10,7 +10,6 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# أكواد CSS و JavaScript متقدمة لإخفاء أي علامات تحكم أو أدوات تخص Streamlit نهائياً
 st.markdown("""
     <style>
     #MainMenu {visibility: hidden;}
@@ -29,7 +28,6 @@ st.markdown("""
     </style>
     
     <script>
-    // كود جافاسكريبت لحذف علامة وأزرار التحكم من الصفحة تلقائياً بمجرد التحميل
     setInterval(function() {
         const badges = window.parent.document.querySelectorAll('[data-testid="stStatusWidget"], .viewerBadge_container__1QSob, .stDeployButton');
         badges.forEach(el => el.remove());
@@ -68,11 +66,13 @@ else:
     st.markdown("<p style='color: #9ca3af;'>نظام التحليل الفني اللحظي المتقدم وإدارة الصفقات بدقة عالية.</p>", unsafe_allow_html=True)
     st.markdown("---")
 
-    # إضافة كافة أزواج العملات والمعادن المطلوبة
+    # قائمة كافة الأزواج الشاملة المحدثة
     all_symbols = [
         "EUR/USD", "GBP/USD", "USD/JPY", "AUD/USD", 
         "USD/CAD", "USD/CHF", "NZD/USD", 
-        "GOLD (XAU/USD)", "SILVER (XAG/USD)"
+        "EUR/GBP", "EUR/JPY", "GBP/JPY", "AUD/JPY", "EUR/AUD", "GBP/AUD",
+        "GOLD (XAU/USD)", "SILVER (XAG/USD)", "CRUDE OIL",
+        "BITCOIN (BTC/USD)", "ETHEREUM (ETH/USD)"
     ]
     symbol = st.selectbox("اختر أصل التداول المباشر:", all_symbols)
     
