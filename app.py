@@ -10,6 +10,7 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
+# أكواد متقدمة لإخفاء كافة قوائم وأزرار وعلامات Streamlit والتحكم بشكل كامل
 st.markdown("""
     <style>
     #MainMenu {visibility: hidden;}
@@ -17,6 +18,8 @@ st.markdown("""
     footer {visibility: hidden;}
     [data-testid="stDecoration"] {display: none;}
     .viewerBadge_container__1QSob {display: none !important;}
+    div[data-testid="stStatusWidget"] {visibility: hidden !important; display: none !important;}
+    .stDeployButton {display: none !important;}
     
     .stApp { background-color: #0b0f19; color: #ffffff; }
     .stMetric { background-color: #111827; padding: 18px; border-radius: 12px; border: 1px solid #1f2937; }
